@@ -1,0 +1,71 @@
+USE sakila
+
+# languages in databases
+SELECT distinct(name)
+FROM language
+ORDER BY name ASC;
+
+# actor last name with 'BER'
+SELECT concat(first_name, ' ', last_name) 
+AS Name
+FROM actor
+WHERE last_name LIKE '%BER%'
+ORDER BY first_name ASC;
+
+# actor last names are not repeated
+SELECT count(*)
+FROM actor
+HAVING count(DISTINCT(last_name))=1;
+
+# films involve a "Crocodile" and a "Shark"
+SELECT count(*)
+FROM film 
+WHERE description LIKE '%Crocodile%'
+OR description LIKE '%Shark%';
+
+# list actor and year with films involve a "Crocodile" and a "Shark"
+SELECT concat(first_name, ' ', last_name) AS Name,
+release_year
+FROM film a JOIN actor b JOIN film_actor c
+ON a.film_id=c.film_id
+AND b.actor_id=c.actor_id
+WHERE description LIKE '%Crocodile%'
+OR description LIKE '%Shark%'
+ORDER BY last_name ASC;
+
+# film categories between 40 and 60 films.
+SELECT count(*), name
+FROM film_category a JOIN category b
+ON a.category_id=b.category_id
+GROUP BY b.category_id
+HAVING 40<=count(*)<=60
+ORDER BY count(*) DESC;
+
+# first name same as actor with ID 24.
+SELECT concat(first_name, ' ', last_name) AS Name
+FROM actor
+WHERE first_name=(SELECT first_name
+FROM actor
+WHERE actor_id=24);
+
+# full name of the actor who has appeared in the most films.
+SELECT concat(first_name, ' ', last_name) AS Name,
+count(a.actor_id)
+FROM film_actor a JOIN actor b
+ON a.actor_id=b.actor_id
+GROUP BY a.actor_id
+ORDER BY count(a.actor_id) DESC
+LIMIT 1;
+
+# Return the film categories with an AVG length longer than overall AVG
+SELECT name, AVG(length)
+FROM film a JOIN category b JOIN film_category c
+ON a.film_id=c.film_id
+AND b.category_id=c.category_id
+GROUP BY name
+HAVING AVG(length)>(SELECT AVG(length)
+FROM film);
+
+# Return the total sales of each store.
+SELECT total_sales
+FROM sales_by_store;
